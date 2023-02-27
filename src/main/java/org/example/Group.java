@@ -35,6 +35,7 @@ public class Group { // Number of group with more than 1 element
                     countOfGroup++;
                 }
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,70 +43,53 @@ public class Group { // Number of group with more than 1 element
         return "Количество групп с более чем одним элементом: " + countOfGroup;
     }
 
-    public void groupWriter() throws IOException { // Временный костыль
+    public void groupWriter() throws IOException { // ОООЧЕНЬ жесткий временный костыль
         List<List<String>> linesList = fileSortingByLines.findLineGroups(Files.lines(Paths.get(filename)).toList());
-        List<List<String>> newList = new ArrayList<>();
-        List<List<String>> newList2 = new ArrayList<>();
-        List<List<String>> newList3 = new ArrayList<>();
-
-        HashMap<Integer, List<List<String>>> map = new HashMap<>();
+        HashMap<Integer, List<List<List<String>>>> map = new HashMap<>();
 
         for (List<String> stringList : linesList) {
             int numOfLines = 0;
             for (String ignored : stringList) {
                 numOfLines++;
             }
-            if (numOfLines == 1) {
-                newList.add(stringList);
-            } else if (numOfLines == 2) {
-                newList2.add(stringList);
+            if (!map.containsKey(numOfLines)) {
+                List<List<String>> tmp2 = new ArrayList<>();
+                tmp2.add(stringList);
+
+                List<List<List<String>>> tmp3 = new ArrayList<>();
+                tmp3.add(tmp2);
+
+                map.put(numOfLines, tmp3);
+
             } else {
-                newList3.add(stringList);
+                List<List<String>> tmp2 = new ArrayList<>();
+                tmp2.add(stringList);
+                map.get(numOfLines).add(tmp2);
+
             }
         }
 
         try (FileWriter fileWriter = new FileWriter(resultFilename)) {
 
-            int groupNumber = 0;
+            int groupNumber = 1;
 
             fileWriter.write(numOfGroupMoreThanOne());
             fileWriter.append('\n').append('\n');
 
-
-            for (int i = 0; i < newList3.size(); i++) {
-                groupNumber++;
-                fileWriter.write("Группа " + groupNumber);
-                fileWriter.append('\n');
-
-                for (String line : newList3.get(i)) {
-                    fileWriter.write(line);
+            for (int i = map.keySet().size(); i > 0; i--) {
+                if(map.get(i) == null) continue;
+                for (List<List<String>> listOfListLines : map.get(i)) {
+                    fileWriter.write("Группа " + groupNumber);
+                    fileWriter.append('\n');
+                    for (List<String> listOfLines : listOfListLines) {
+                        for (String line: listOfLines) {
+                            fileWriter.write(line);
+                            fileWriter.append('\n');
+                        }
+                    }
+                    groupNumber++;
                     fileWriter.append('\n');
                 }
-                fileWriter.append('\n');
-            }
-
-            for (int i = 0; i < newList2.size(); i++) {
-                groupNumber++;
-                fileWriter.write("Группа " + groupNumber);
-                fileWriter.append('\n');
-
-                for (String line : newList2.get(i)) {
-                    fileWriter.write(line);
-                    fileWriter.append('\n');
-                }
-                fileWriter.append('\n');
-            }
-
-            for (List<String> strings : newList) {
-                groupNumber++;
-                fileWriter.write("Группа " + groupNumber);
-                fileWriter.append('\n');
-
-                for (String line : strings) {
-                    fileWriter.write(line);
-                    fileWriter.append('\n');
-                }
-                fileWriter.append('\n');
             }
 
         } catch (IOException e) {

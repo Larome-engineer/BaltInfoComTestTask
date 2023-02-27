@@ -13,6 +13,5 @@ public class Main {
         long end = System.currentTimeMillis();
         System.out.println("Program execution time: " + ((double) end - start)/1000 + " seconds");
 
-
     }
 }
